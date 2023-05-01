@@ -17,6 +17,20 @@ struct IsBusyResponse {
     is_busy: bool,
 }
 
+impl IsBusyResponse {
+    async fn new(llm: Arc<Mutex<LLMInterface<LlamaExecutor>>>) -> Self {
+        // Attempt to acquire the LLM mutex lock
+        let is_available = llm.try_lock();
+        // Determine whether the lock was acquired and create the response object
+        let resp = Self {
+            success: true,
+            is_busy: is_available.is_err(),
+        };
+        drop(is_available);
+        return resp;
+    }
+}
+
 // Define a struct to represent a successful prompt response
 #[derive(Serialize)]
 struct PromptResponse {
@@ -44,13 +58,7 @@ pub async fn route_requests(
 async fn is_busy_endpoint(
     llm: Arc<Mutex<LLMInterface<LlamaExecutor>>>,
 ) -> Result<Response<Body>, LLMError> {
-    // Attempt to acquire the LLM mutex lock
-    let is_available = llm.try_lock();
-    // Determine whether the lock was acquired and create the response object
-    let response = IsBusyResponse {
-        success: true,
-        is_busy: is_available.is_ok(),
-    };
+    let response = IsBusyResponse::new(llm).await;
     // Serialize the response object to JSON
     let body = serde_json::to_string(&response)?;
     // Return a new response with the JSON content
