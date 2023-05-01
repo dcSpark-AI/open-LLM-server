@@ -8,9 +8,10 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.70"
 llm-chain-llama = "0.8.2"
+llm-chain-openai = "0.8.2"
 llm-chain = "0.8.2"
 tokio = { version = "1.27.0", features = ["macros", "rt"] }
-axum = "0.6.18"
+hyper = { version = "0.14", features = ["full"] }
 
 [dev-dependencies]
 tokio = { version = "1.27.0", features = ["macros", "rt"] }
