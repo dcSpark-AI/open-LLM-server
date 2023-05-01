@@ -24,4 +24,16 @@ impl fmt::Display for LLMError {
     }
 }
 
+impl From<hyper::http::Error> for LLMError {
+    fn from(error: hyper::http::Error) -> Self {
+        LLMError::Custom(format!("Hyper HTTP error: {}", error))
+    }
+}
+
+impl From<serde_json::Error> for LLMError {
+    fn from(error: serde_json::Error) -> Self {
+        LLMError::Custom(format!("JSON error: {}", error))
+    }
+}
+
 impl Error for LLMError {}

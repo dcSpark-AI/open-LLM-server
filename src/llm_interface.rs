@@ -21,6 +21,7 @@ impl LLMInterface<LlamaExecutor> {
 
     // Submit a prompt to the LLM if it isn't currently busy
     pub async fn submit_prompt(&mut self) -> Result<String, LLMError> {
+        println!("Prompt received, submitting to LLM...");
         // Run prompt
         let res = prompt!("Write a hypothetical weather report for {season} in {location}.")
             .run(

@@ -1,11 +1,28 @@
 use crate::error::LLMError;
 use crate::llm_interface::LLMInterface;
 use futures::Future;
+use hyper::header;
 use hyper::{Body, Request, Response};
 use llm_chain_llama::Executor as LlamaExecutor;
+use serde::Serialize;
+use serde_json;
 use std::sync::Arc;
 use tokio::sync::oneshot;
 use tokio::sync::Mutex;
+
+// Define a struct to represent the is_busy endpoint response
+#[derive(Serialize)]
+struct IsBusyResponse {
+    success: bool,
+    is_busy: bool,
+}
+
+// Define a struct to represent a successful prompt response
+#[derive(Serialize)]
+struct PromptResponse {
+    success: bool,
+    response: String,
+}
 
 // Routes requests based on their URI
 pub async fn route_requests(
@@ -29,14 +46,17 @@ async fn is_busy_endpoint(
 ) -> Result<Response<Body>, LLMError> {
     // Attempt to acquire the LLM mutex lock
     let is_available = llm.try_lock();
-    // Determine whether the lock was acquired and set the response content accordingly
-    let content = if is_available.is_ok() {
-        "false"
-    } else {
-        "true"
+    // Determine whether the lock was acquired and create the response object
+    let response = IsBusyResponse {
+        success: true,
+        is_busy: is_available.is_ok(),
     };
-    // Return a new response with the content
-    Ok(Response::new(Body::from(content)))
+    // Serialize the response object to JSON
+    let body = serde_json::to_string(&response)?;
+    // Return a new response with the JSON content
+    Ok(Response::builder()
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::from(body))?)
 }
 
 // Handle a prompt request and send the response through a channel
@@ -51,16 +71,47 @@ async fn prompt_endpoint(
         // If the LLM is locked, return an error
         Err(_) => Err(LLMError::Custom("LLM Is Busy".to_string())),
     };
+
     // Create a response based on the result of the prompt request
-    let res = match content {
-        Ok(content) => Response::new(Body::from(content)),
-        Err(error) => Response::new(Body::from("Failed submitting prompt request to LLM")),
+    let response = match content {
+        Ok(content) => PromptResponse {
+            success: true,
+            response: content,
+        },
+        Err(error) => PromptResponse {
+            success: false,
+            response: error.to_string(),
+        },
     };
+
+    // Convert the response to JSON
+    let body = match serde_json::to_string(&response) {
+        Ok(body) => body,
+        Err(_) => {
+            if tx
+                .send(Err(LLMError::Custom(
+                    "Failed to convert response to JSON".to_string(),
+                )))
+                .is_err()
+            {
+                eprintln!("Failed to send prompt response.");
+            }
+            return;
+        }
+    };
+
+    // Create a JSON response
+    let res = Response::builder()
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(Body::from(body))
+        .map_err(LLMError::from);
+
     // Send the response through the channel
-    if tx.send(Ok(res)).is_err() {
+    if tx.send(res).is_err() {
         eprintln!("Failed to send prompt response.");
     }
 }
+
 // Spawns a new task to handle a request and returns the result
 async fn spawn_and_get_result<F, Fut>(
     req: Request<Body>,
