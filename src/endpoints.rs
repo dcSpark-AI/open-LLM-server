@@ -18,12 +18,12 @@ struct IsBusyResponse {
 }
 
 impl IsBusyResponse {
-    async fn new(llm: Arc<Mutex<LLMInterface<LlamaExecutor>>>) -> Self {
+    async fn new(llm: Arc<Mutex<LLMInterface<LlamaExecutor>>>, endpoint_success: bool) -> Self {
         // Attempt to acquire the LLM mutex lock
         let is_available = llm.try_lock();
         // Determine whether the lock was acquired and create the response object
         let resp = Self {
-            success: true,
+            success: endpoint_success,
             is_busy: is_available.is_err(),
         };
         drop(is_available);
@@ -43,11 +43,19 @@ pub async fn route_requests(
     req: Request<Body>,
     llm: Arc<Mutex<LLMInterface<LlamaExecutor>>>,
 ) -> Result<Response<Body>, LLMError> {
-    // Match the URI path to the appropriate endpoint function
+    // Pre-check if the LLM is busy before doing any other routing
+    let response = IsBusyResponse::new(Arc::clone(&llm), false).await;
+    if response.is_busy && req.uri().path() != "/is_busy" {
+        return is_busy_http_response(response).await;
+    }
+
+    // If the LLM isn't busy,
+    // match the URI path to the appropriate endpoint function
     match req.uri().path() {
         // Spawn a new task to handle a prompt request and return the result
         "/prompt" => spawn_and_get_result(req, llm, prompt_endpoint).await,
-        // Return a response indicating whether the LLM is currently locked
+        // Return a response indicating whether the LLM is currently locked.
+        // This endpoint is required for setting the success value properly.
         "/is_busy" => is_busy_endpoint(llm).await,
         // Return an empty response for any other path
         _ => Ok(Response::new(Body::empty())),
@@ -55,10 +63,16 @@ pub async fn route_requests(
 }
 
 // Returns a response indicating whether the LLM is currently locked
+// This returns success == true;
 async fn is_busy_endpoint(
     llm: Arc<Mutex<LLMInterface<LlamaExecutor>>>,
 ) -> Result<Response<Body>, LLMError> {
-    let response = IsBusyResponse::new(llm).await;
+    let response = IsBusyResponse::new(llm, true).await;
+    is_busy_http_response(response).await
+}
+
+// Takes an IsBusyResponse and builds it into a proper http response
+async fn is_busy_http_response(response: IsBusyResponse) -> Result<Response<Body>, LLMError> {
     // Serialize the response object to JSON
     let body = serde_json::to_string(&response)?;
     // Return a new response with the JSON content
