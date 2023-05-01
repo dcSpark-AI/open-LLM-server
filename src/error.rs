@@ -6,6 +6,7 @@ pub enum LLMError {
     IsBusy,
     InitializingLLMFailed,
     SubmittingPromptFailed,
+    Custom(String),
 }
 
 impl fmt::Display for LLMError {
@@ -15,6 +16,9 @@ impl fmt::Display for LLMError {
             LLMError::InitializingLLMFailed => write!(f, "Initializing the LLLM has failed."),
             LLMError::SubmittingPromptFailed => {
                 write!(f, "Submitting prompt to the LLM has failed.")
+            }
+            LLMError::Custom(s) => {
+                write!(f, "{s}")
             }
         }
     }
