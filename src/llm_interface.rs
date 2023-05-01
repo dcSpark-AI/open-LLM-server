@@ -7,7 +7,6 @@ use llm_chain_llama::{PerExecutor, PerInvocation};
 
 pub struct LLMInterface<T: Executor> {
     exec: T,
-    is_busy: bool,
 }
 impl LLMInterface<LlamaExecutor> {
     pub fn new_local_llm(model_path: &str) -> Result<Self, LLMError> {
@@ -17,61 +16,24 @@ impl LLMInterface<LlamaExecutor> {
         let executor = LlamaExecutor::new_with_options(Some(exec_options), Some(inv_options))
             .map_err(|_| LLMError::InitializingLLMFailed)?;
 
-        Ok(Self {
-            exec: executor,
-            is_busy: false,
-        })
+        Ok(Self { exec: executor })
     }
 
     // Submit a prompt to the LLM if it isn't currently busy
     pub async fn submit_prompt(&mut self) -> Result<String, LLMError> {
-        // If the LLM isn't currently busy
-        if !self.is_busy {
-            // Set self to busy
-            self.is_busy = true;
-            // Run prompt
-            let res = prompt!("Write a hypothetical weather report for {season} in {location}.")
-                .run(
-                    &parameters!("season" => "summer", "location" => "the moon"),
-                    &self.exec,
-                )
-                .await
-                .map_err(|_| LLMError::InitializingLLMFailed)?;
-            // Acquire result string
-            let res_string = res.to_string();
-            println!("Llama: {}", res_string);
+        // Run prompt
+        let res = prompt!("Write a hypothetical weather report for {season} in {location}.")
+            .run(
+                &parameters!("season" => "summer", "location" => "the moon"),
+                &self.exec,
+            )
+            .await
+            .map_err(|_| LLMError::SubmittingPromptFailed)?;
+        // Acquire result string
+        let res_string = res.to_string();
+        println!("Local LLM Response: {}", res_string);
 
-            // Unset busy and return string
-            self.is_busy = false;
-            return Ok(res_string);
-        }
-
-        // Return IsBusy error
-        Err(LLMError::IsBusy)
+        // Return string
+        return Ok(res_string);
     }
 }
-
-// impl LLMInterface<ChatGPTExecutor> {
-//     pub fn with_chatgpt_executor() -> Result<Self, Box<dyn Error>> {
-//         let executor = ChatGPTExecutor::new()?;
-//         Ok(Self { exec: executor, is_busy: false })
-//     }
-// }
-
-// Goal will be to have this be generic, but upstream library seems to not implement everything we need for genericity in types
-// impl<T: Executor> LLMInterface<T> {
-//     impl<T: Executor> LLMInterface<T> where T::Output: ToString {
-//         pub async fn submit_prompt(&self) -> Result<String, Box<dyn std::error::Error>> {
-//             let res = prompt!("Write a hypothetical weather report for {season} in {location}.")
-//                 .run(
-//                     &parameters!("season" => "summer", "location" => "the moon"),
-//                     &self.exec,
-//                 )
-//                 .await?;
-//             let res_string = res.to_string();
-//             println!("Llama: {}", res_string);
-//             Ok(res_string)
-//         }
-//     }
-
-// }
