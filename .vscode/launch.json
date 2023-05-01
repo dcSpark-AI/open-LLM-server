@@ -1,0 +1,44 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug executable 'open_llm_server'",
+      "cargo": {
+        "args": ["build", "--bin=open_llm_server", "--package=open_llm_server"],
+        "filter": {
+          "name": "open_llm_server",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "env": {
+        "MY_ENV_VAR": "my_env_var_value"
+      },
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in executable 'open_llm_server'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--bin=open_llm_server",
+          "--package=open_llm_server"
+        ],
+        "filter": {
+          "name": "open_llm_server",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}
