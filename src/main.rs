@@ -2,21 +2,20 @@ mod error;
 mod llm_interface;
 
 use error::LLMError;
-use futures::executor;
+use futures::Future;
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Request, Response, Server};
 use llm_chain_llama::Executor as LlamaExecutor;
 use llm_interface::LLMInterface;
 use std::error::Error;
 use std::sync::Arc;
-use tokio::sync::mpsc;
 use tokio::sync::oneshot;
 use tokio::sync::Mutex;
 
 async fn prompt_request(
     req: Request<Body>,
     llm: Arc<Mutex<LLMInterface<LlamaExecutor>>>,
-    tx: mpsc::Sender<Result<Response<Body>, LLMError>>,
+    tx: oneshot::Sender<Result<Response<Body>, LLMError>>,
 ) {
     let content = match llm.try_lock() {
         Ok(mut llm_guard) => llm_guard.submit_prompt().await,
@@ -28,9 +27,32 @@ async fn prompt_request(
         Err(error) => Response::new(Body::from("Failed submitting prompt request to LLM")),
     };
 
-    if tx.send(Ok(res)).await.is_err() {
+    if tx.send(Ok(res)).is_err() {
         eprintln!("Failed to send prompt response.");
     }
+}
+
+async fn spawn_and_get_result<F, Fut>(
+    req: Request<Body>,
+    llm: Arc<Mutex<LLMInterface<LlamaExecutor>>>,
+    func: F,
+) -> Result<Response<Body>, LLMError>
+where
+    F: Fn(
+            Request<Body>,
+            Arc<Mutex<LLMInterface<LlamaExecutor>>>,
+            oneshot::Sender<Result<Response<Body>, LLMError>>,
+        ) -> Fut
+        + Send
+        + 'static,
+    Fut: Future<Output = ()> + Send + 'static,
+{
+    let (tx, rx) = oneshot::channel();
+    tokio::task::spawn(async move {
+        tokio::task::block_in_place(|| futures::executor::block_on(func(req, llm, tx)));
+    });
+    rx.await
+        .unwrap_or_else(|_| Err(LLMError::Custom("Failed to get response.".to_string())))
 }
 
 async fn route_request(
@@ -38,19 +60,8 @@ async fn route_request(
     llm: Arc<Mutex<LLMInterface<LlamaExecutor>>>,
 ) -> Result<Response<Body>, LLMError> {
     match req.uri().path() {
-        "/prompt" => {
-            let (tx, mut rx) = mpsc::channel(1);
-            tokio::task::spawn(async move {
-                let result = tokio::task::block_in_place(|| {
-                    futures::executor::block_on(prompt_request(req, llm, tx))
-                });
-            });
-            rx.recv().await.unwrap_or_else(|| {
-                Err(LLMError::Custom(
-                    "Failed to get prompt response.".to_string(),
-                ))
-            })
-        }
+        "/prompt" => spawn_and_get_result(req, llm, prompt_request).await,
+        //"/embeddings" => spawn_and_get_result(req, llm, prompt_embeddings).await,
         "/is_busy" => {
             let is_available = llm.try_lock();
             let content = if is_available.is_ok() {
