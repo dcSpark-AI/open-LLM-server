@@ -2,4 +2,4 @@
 /debug
 **/*.rs.bk
 Cargo.lock
-model.bin
+*.bin
