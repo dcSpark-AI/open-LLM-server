@@ -1,8 +1,9 @@
+use crate::APP_VERSION;
 use clap::{App, Arg};
 
 pub fn cli_interface() -> clap::ArgMatches {
     let matches = App::new("Open LLM Server")
-        .version("1.0")
+        .version(APP_VERSION)
         .about("Expose and run local LLMs via HTTP API using a single command.")
         .subcommand(
             App::new("run")

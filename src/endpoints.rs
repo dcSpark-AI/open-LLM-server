@@ -1,5 +1,6 @@
 use crate::error::LLMError;
 use crate::llm_interface::LLMInterface;
+use crate::APP_VERSION;
 use futures::Future;
 use hyper::header;
 use hyper::{Body, Request, Response};
@@ -52,6 +53,8 @@ pub async fn route_requests(
     // If the LLM isn't busy,
     // match the URI path to the appropriate endpoint function
     match req.uri().path() {
+        // Root endpoint
+        "/" => root_endpoint(req).await,
         // Spawn a new task to handle a prompt request and return the result
         "/prompt" => spawn_and_get_result(req, llm, prompt_endpoint).await,
         // Return a response indicating whether the LLM is currently locked.
@@ -60,6 +63,17 @@ pub async fn route_requests(
         // Return an empty response for any other path
         _ => Ok(Response::new(Body::empty())),
     }
+}
+
+// Basic root endpoint
+async fn root_endpoint(_req: Request<Body>) -> Result<Response<Body>, LLMError> {
+    let response_body = "Open LLM Server v".to_string() + APP_VERSION;
+    let response = Response::builder()
+        .header(header::CONTENT_TYPE, "text/plain")
+        .body(Body::from(response_body))
+        .map_err(LLMError::from)?;
+
+    Ok(response)
 }
 
 // Returns a response indicating whether the LLM is currently locked

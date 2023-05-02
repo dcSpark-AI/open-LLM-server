@@ -14,6 +14,9 @@ use std::error::Error;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
+// Gets the app version from Cargo.toml
+pub const APP_VERSION: &str = "0.1.0";
+
 #[tokio::main]
 
 async fn main() -> Result<(), Box<dyn Error>> {
