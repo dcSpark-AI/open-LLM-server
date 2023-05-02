@@ -4,7 +4,6 @@ use llm_chain_llama::Executor as LlamaExecutor;
 use llm_chain_openai::chatgpt::Executor as ChatGPTExecutor;
 use std::path::Path;
 
-
 use llm_chain_llama::{PerExecutor, PerInvocation};
 
 pub struct LLMInterface<T: Executor> {
@@ -28,14 +27,11 @@ impl LLMInterface<LlamaExecutor> {
     }
 
     // Submit a prompt to the LLM if it isn't currently busy
-    pub async fn submit_prompt(&mut self) -> Result<String, LLMError> {
+    pub async fn submit_prompt(&mut self, prompt_text: &str) -> Result<String, LLMError> {
         println!("Prompt received, submitting to LLM...");
         // Run prompt
-        let res = prompt!("Write a hypothetical weather report for {season} in {location}.")
-            .run(
-                &parameters!("season" => "summer", "location" => "the moon"),
-                &self.exec,
-            )
+        let res = prompt!(prompt_text)
+            .run(&parameters!(), &self.exec)
             .await
             .map_err(|_| LLMError::SubmittingPromptFailed)?;
         // Acquire result string

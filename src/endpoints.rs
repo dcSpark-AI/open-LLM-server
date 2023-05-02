@@ -2,10 +2,11 @@ use crate::error::LLMError;
 use crate::llm_interface::LLMInterface;
 use crate::APP_VERSION;
 use futures::Future;
+use hyper::body::to_bytes;
 use hyper::header;
 use hyper::{Body, Request, Response};
 use llm_chain_llama::Executor as LlamaExecutor;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json;
 use std::sync::Arc;
 use tokio::sync::oneshot;
@@ -30,6 +31,11 @@ impl IsBusyResponse {
         drop(is_available);
         return resp;
     }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct PromptInput {
+    prompt: String,
 }
 
 // Define a struct to represent a successful prompt response
@@ -97,13 +103,33 @@ async fn is_busy_http_response(response: IsBusyResponse) -> Result<Response<Body
 
 // Handle a prompt request and send the response through a channel
 async fn prompt_endpoint(
-    req: Request<Body>,
+    mut req: Request<Body>,
     llm: Arc<Mutex<LLMInterface<LlamaExecutor>>>,
     tx: oneshot::Sender<Result<Response<Body>, LLMError>>,
 ) {
+    // Extract the body from the request and convert it to a string
+    let body_bytes = to_bytes(req.body_mut()).await.unwrap();
+    let body_str = String::from_utf8(body_bytes.to_vec()).unwrap();
+
+    // Deserialize the body string into a PromptInput struct
+    let input: PromptInput = match serde_json::from_str(&body_str) {
+        Ok(input) => input,
+        Err(_) => {
+            if tx
+                .send(Err(LLMError::Custom(
+                    "Failed to parse request body".to_string(),
+                )))
+                .is_err()
+            {
+                eprintln!("Failed to send prompt response.");
+            }
+            return;
+        }
+    };
+
     // Attempt to acquire the LLM mutex lock and submit the prompt
     let content = match llm.try_lock() {
-        Ok(mut llm_guard) => llm_guard.submit_prompt().await,
+        Ok(mut llm_guard) => llm_guard.submit_prompt(&input.prompt).await,
         // If the LLM is locked, return an error
         Err(_) => Err(LLMError::Custom("LLM Is Busy".to_string())),
     };
