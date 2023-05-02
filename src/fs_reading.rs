@@ -1,4 +1,5 @@
 use std::fs;
+use std::path::Path;
 
 /// Finds the first `.bin` file in the current directory and returns its path.
 /// If no `.bin` files are found, returns `None`.
@@ -24,4 +25,14 @@ pub fn find_local_model() -> Option<String> {
         }
     }
     None
+}
+
+// Closes the app if the model file does not exist
+pub fn model_file_close_check(model_path: &str) {
+    if !(Path::new(model_path).exists() && Path::new(model_path).is_file()) {
+        println!("Error: Model file could not be found/read, unable to start.");
+        println!("Please ensure you have a .bin in the same folder as this executable,");
+        println!("or that you specify the correct path via the '-p' option.");
+        std::process::exit(1);
+    }
 }

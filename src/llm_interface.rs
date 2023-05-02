@@ -2,6 +2,8 @@ use crate::error::LLMError;
 use llm_chain::{parameters, prompt, traits::Executor};
 use llm_chain_llama::Executor as LlamaExecutor;
 use llm_chain_openai::chatgpt::Executor as ChatGPTExecutor;
+use std::path::Path;
+
 
 use llm_chain_llama::{PerExecutor, PerInvocation};
 
@@ -14,9 +16,15 @@ impl LLMInterface<LlamaExecutor> {
         let mut inv_options = PerInvocation::new();
         inv_options.n_threads = Some(8);
         let executor = LlamaExecutor::new_with_options(Some(exec_options), Some(inv_options))
-            .map_err(|_| LLMError::InitializingLLMFailed)?;
+            .map_err(|_| LLMError::InitializingLLMFailed);
 
-        Ok(Self { exec: executor })
+        // Looks like the error might not be propagating to here?
+        if let Err(e) = executor {
+            println!("Failed to initialize LLM interface: {}", e);
+            std::process::exit(1);
+        }
+
+        Ok(Self { exec: executor? })
     }
 
     // Submit a prompt to the LLM if it isn't currently busy

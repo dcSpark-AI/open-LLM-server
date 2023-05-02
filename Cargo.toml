@@ -15,6 +15,7 @@ futures = "0.3.20"
 hyper = { version = "0.14", features = ["full"] }
 serde = "1.0.160"
 serde_json = "1.0.96"
+clap = "3.2.6"
 
 [dev-dependencies]
 tokio = { version = "1.27.0", features = ["macros", "rt","rt-multi-thread"] }
