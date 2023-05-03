@@ -1,0 +1,25 @@
+[package]
+name = "llm-chain-llama"
+version = "0.8.2"
+edition = "2021"
+description = "A library implementing `llm-chains` for LLamA. Chains can be use to apply the model series to complete complex tasks, such as agents."
+license = "MIT"
+keywords = ["llm", "langchain", "llama", "chain"]
+categories = ["science"]
+authors = [
+    "Emil Juzovitski <emil@sobel.io",
+    "William Rudenmalm <william@sobel.io>",
+]
+readme = "./README.md"
+repository = "https://github.com/sobelio/llm-chain/"
+
+[dependencies]
+anyhow = "1.0.70"
+async-trait = "0.1.68"
+llm-chain-llama-sys = { path = "./sys", version = "0.8" }
+llm-chain = { path = "../llm-chain", version = "0.8.2" }
+serde = { version = "1.0.160", features = ["derive"] }
+thiserror = "1.0.40"
+
+[dev-dependencies]
+tokio = { version = "1.27.0", features = ["macros", "rt"] }

@@ -1,0 +1,20 @@
+[package]
+name = "llm-chain-llama-sys"
+description = "A library with bindings based on bindgen for LLaMA.cpp"
+version = "0.8.2"
+edition = "2021"
+license = "MIT"
+keywords = ["llm", "langchain", "llama", "chain"]
+categories = ["science"]
+authors = [
+    "Emil Juzovitski <emil@sobel.io",
+    "William Rudenmalm <william@sobel.io>",
+]
+repository = "https://github.com/sobelio/llm-chain/"
+readme = "README.md"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+[build-dependencies]
+bindgen = "0.65"
