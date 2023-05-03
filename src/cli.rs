@@ -21,6 +21,34 @@ pub fn cli_interface() -> clap::ArgMatches {
                         .long("model")
                         .takes_value(true)
                         .help("The path to the local LLM model file"),
+                )
+                .arg(
+                    Arg::new("temp")
+                        .short('t')
+                        .long("temp")
+                        .takes_value(true)
+                        .help("The sampling temperature the LLM should use (Default: 0.7)"),
+                )
+                .arg(
+                    Arg::new("freq_penalty")
+                        .short('f')
+                        .long("freq_penalty")
+                        .takes_value(true)
+                        .help("The frequency(repeat) penalty the LLM should use (Default: 1.2)"),
+                )
+                .arg(
+                    Arg::new("output_tokens")
+                        .short('o')
+                        .long("output_tokens")
+                        .takes_value(true)
+                        .help("The max number of output tokens you want the model to return (Default: 2048)"),
+                )
+                .arg(
+                    Arg::new("num_threads")
+                        .short('n')
+                        .long("num_threads")
+                        .takes_value(true)
+                        .help("Number of threads the LLM should use (Default: 8)"),
                 ),
         )
         .subcommand(App::new("help").about("Prints help information"))

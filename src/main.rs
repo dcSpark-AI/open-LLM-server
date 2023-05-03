@@ -14,13 +14,17 @@ use std::error::Error;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
-// Gets the app version from Cargo.toml
 pub const APP_VERSION: &str = "0.1.0";
 
 #[tokio::main]
 
 async fn main() -> Result<(), Box<dyn Error>> {
+    // Default values, most taken from llm-chain-llama internal defaults
     let default_port = 9123;
+    let default_threads = 8;
+    let default_temp = 0.7;
+    let default_freq_penalty = 1.2;
+    let default_output_tokens = 2048;
 
     let matches = cli_interface();
     match matches.subcommand() {
@@ -30,13 +34,41 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 .unwrap_or(&default_port.to_string())
                 .parse::<u16>()
                 .unwrap_or(default_port);
+            let num_threads = sub_m
+                .value_of("num_threads")
+                .unwrap_or(&default_threads.to_string())
+                .parse::<u16>()
+                .unwrap_or(default_threads);
+            let temp = sub_m
+                .value_of("temp")
+                .unwrap_or(&default_temp.to_string())
+                .parse::<f32>()
+                .unwrap_or(default_temp);
+            let freq_penalty = sub_m
+                .value_of("freq_penalty")
+                .unwrap_or(&default_freq_penalty.to_string())
+                .parse::<f32>()
+                .unwrap_or(default_freq_penalty);
+            let output_tokens = sub_m
+                .value_of("output_tokens")
+                .unwrap_or(&default_output_tokens.to_string())
+                .parse::<usize>()
+                .unwrap_or(default_output_tokens);
             let m_arg = sub_m.value_of("model");
             let model_path = match m_arg {
                 Some(m) => m.to_string(),
                 None => find_local_model().unwrap_or(("model.bin").to_string()),
             };
             model_file_close_check(&model_path);
-            return run_webserver(&model_path, port).await;
+            return run_webserver(
+                &model_path,
+                port,
+                num_threads,
+                temp,
+                freq_penalty,
+                output_tokens,
+            )
+            .await;
         }
         Some(("help", _)) => println!("Help message"),
         _ => println!("Invalid command"),
@@ -45,9 +77,22 @@ async fn main() -> Result<(), Box<dyn Error>> {
 }
 
 // Intializes the LLM model interface, and starts the web server
-async fn run_webserver(model_path: &str, port: u16) -> Result<(), Box<dyn Error>> {
+async fn run_webserver(
+    model_path: &str,
+    port: u16,
+    num_threads: u16,
+    temp: f32,
+    freq_penalty: f32,
+    output_tokens: usize,
+) -> Result<(), Box<dyn Error>> {
     // Setup LLMInterface using an Arc and Mutex to enable sharing the LLM interface across endpoints
-    let llm = Arc::new(Mutex::new(LLMInterface::new_local_llm(model_path)?));
+    let llm = Arc::new(Mutex::new(LLMInterface::new_local_llm(
+        model_path,
+        num_threads,
+        temp,
+        freq_penalty,
+        output_tokens
+    )?));
 
     // Setup the endpoints
     let make_svc = make_service_fn(|_conn| {

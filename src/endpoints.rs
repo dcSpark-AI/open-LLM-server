@@ -62,7 +62,7 @@ pub async fn route_requests(
         // Root endpoint
         "/" => root_endpoint(req).await,
         // Spawn a new task to handle a prompt request and return the result
-        "/prompt" => spawn_and_get_result(req, llm, prompt_endpoint).await,
+        "/submit_prompt" => spawn_and_get_result(req, llm, submit_prompt_endpoint).await,
         // Return a response indicating whether the LLM is currently locked.
         // This endpoint is required for setting the success value properly.
         "/is_busy" => is_busy_endpoint(llm).await,
@@ -102,7 +102,7 @@ async fn is_busy_http_response(response: IsBusyResponse) -> Result<Response<Body
 }
 
 // Handle a prompt request and send the response through a channel
-async fn prompt_endpoint(
+async fn submit_prompt_endpoint(
     mut req: Request<Body>,
     llm: Arc<Mutex<LLMInterface<LlamaExecutor>>>,
     tx: oneshot::Sender<Result<Response<Body>, LLMError>>,
