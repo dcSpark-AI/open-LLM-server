@@ -4,7 +4,7 @@ use llm_chain_llama::Executor as LlamaExecutor;
 use llm_chain_llama::{PerExecutor, PerInvocation};
 
 pub struct LLMInterface<T: Executor> {
-    exec: T,
+    pub exec: T,
 }
 impl LLMInterface<LlamaExecutor> {
     pub fn new_local_llm(

@@ -2,12 +2,14 @@ use crate::error::LLMError;
 use crate::llm_interface::LLMInterface;
 use crate::APP_VERSION;
 use futures::Future;
-use hyper::body::to_bytes;
+use hyper::body::{to_bytes, Bytes};
 use hyper::header;
 use hyper::{Body, Request, Response};
+use llm_chain::{parameters, prompt};
 use llm_chain_llama::Executor as LlamaExecutor;
 use serde::{Deserialize, Serialize};
 use serde_json;
+use std::convert::Infallible;
 use std::sync::Arc;
 use tokio::sync::oneshot;
 use tokio::sync::Mutex;
@@ -63,6 +65,10 @@ pub async fn route_requests(
         "/" => root_endpoint(req).await,
         // Spawn a new task to handle a prompt request and return the result
         "/submit_prompt" => spawn_and_get_result(req, llm, submit_prompt_endpoint).await,
+        // Handle a prompt request by streaming the result back to the client
+        "/submit_prompt_streaming" => {
+            spawn_and_get_result(req, llm, submit_prompt_streaming_endpoint).await
+        }
         // Return a response indicating whether the LLM is currently locked.
         // This endpoint is required for setting the success value properly.
         "/is_busy" => is_busy_endpoint(llm).await,
@@ -99,6 +105,80 @@ async fn is_busy_http_response(response: IsBusyResponse) -> Result<Response<Body
     Ok(Response::builder()
         .header(header::CONTENT_TYPE, "application/json")
         .body(Body::from(body))?)
+}
+
+async fn submit_prompt_streaming_endpoint(
+    mut req: Request<Body>,
+    llm: Arc<Mutex<LLMInterface<LlamaExecutor>>>,
+    tx: oneshot::Sender<Result<Response<Body>, LLMError>>,
+) {
+    // Extract the body from the request and convert it to a string
+    let body_bytes = to_bytes(req.body_mut()).await.unwrap();
+    let body_str = String::from_utf8(body_bytes.to_vec()).unwrap();
+
+    // Deserialize the body string into a PromptInput struct
+    let input: PromptInput = match serde_json::from_str(&body_str) {
+        Ok(input) => input,
+        Err(_) => {
+            if tx
+                .send(Err(LLMError::Custom(
+                    "Failed to parse request body".to_string(),
+                )))
+                .is_err()
+            {
+                eprintln!("Failed to send prompt response.");
+            }
+            return;
+        }
+    };
+
+    if let Ok(mut llm_guard) = llm.try_lock() {
+        // Create a one-shot channel for sending the output to the main thread
+        let (output_tx, output_rx) = oneshot::channel::<String>();
+
+        // Execute the task with the provided callback
+        let exec = llm_guard
+            .exec
+            .with_callback(move |output: &llm_chain_llama::Output| {
+                let output_str = output.to_string();
+                print!("{}", output_str);
+                let _ = output_tx.send(output_str);
+            });
+
+        // Perform the task and handle the output
+        let result = prompt!("What is a maple leaf?")
+            .run(&parameters!(), &exec)
+            .await
+            .map_err(|_| LLMError::SubmittingPromptFailed);
+
+        // Send the response through the channel
+        if tx
+            .send(result.map(|_| {
+                // Stream the output back to the client
+                let output_stream = output_rx
+                    .map(|output| {
+                        output
+                            .map_err(|_| LLMError::Custom("Failed to receive output.".to_string()))
+                    })
+                    .into_stream()
+                    .map(|output| output.map(|output| Ok::<_, Infallible>(Bytes::from(output))))
+                    .flatten();
+                let body = Body::wrap_stream(output_stream);
+
+                Response::new(body)
+            }))
+            .is_err()
+        {
+            eprintln!("Failed to send prompt response.");
+        }
+    } else {
+        if tx
+            .send(Err(LLMError::Custom("LLM is currently busy.".to_string())))
+            .is_err()
+        {
+            eprintln!("Failed to send prompt response.");
+        }
+    }
 }
 
 // Handle a prompt request and send the response through a channel
