@@ -1,5 +1,5 @@
 use crate::error::LLMError;
-use llm_chain::{parameters, prompt, traits::Executor};
+use llm_chain::{parameters, prompt, traits::Executor, Parameters};
 use llm_chain_llama::Executor as LlamaExecutor;
 use llm_chain_llama::{PerExecutor, PerInvocation};
 
@@ -38,8 +38,9 @@ impl LLMInterface<LlamaExecutor> {
     pub async fn submit_prompt(&mut self, prompt_text: &str) -> Result<String, LLMError> {
         println!("Prompt received: {}", prompt_text);
         // Run prompt
+        let params = Parameters::new();
         let res = prompt!(prompt_text)
-            .run(&parameters!(), &self.exec)
+            .run(&params, &self.exec)
             .await
             .map_err(|_| LLMError::SubmittingPromptFailed)?;
         // Acquire result string
@@ -47,5 +48,20 @@ impl LLMInterface<LlamaExecutor> {
 
         // Return string
         return Ok(res_string);
+    }
+
+    // Generate embeddings for the given input
+    pub async fn generate_embeddings(&mut self, input_text: &str) -> Result<Vec<i32>, LLMError> {
+        println!("Generating embeddings for: {}", input_text);
+        // Run prompt
+        let res = self.exec.generate_embeddings(input_text);
+
+        println!("Embedding Vector:");
+        for element in &res {
+            println!("{}", element);
+        }
+
+        // Return string
+        return Ok(res);
     }
 }
