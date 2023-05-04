@@ -1,5 +1,5 @@
 use crate::error::LLMError;
-use llm_chain::{parameters, prompt, traits::Executor, Parameters};
+use llm_chain::{prompt, traits::Executor, Parameters};
 use llm_chain_llama::Executor as LlamaExecutor;
 use llm_chain_llama::{PerExecutor, PerInvocation};
 
