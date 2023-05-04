@@ -19,61 +19,64 @@ pub const APP_VERSION: &str = "0.1.0";
 #[tokio::main]
 
 async fn main() -> Result<(), Box<dyn Error>> {
-    // Default values, most taken from llm-chain-llama internal defaults
-    let default_port = 9123;
+    let matches = cli_interface();
+    match matches.subcommand() {
+        Some(("run", sub_m)) => return handle_run_command(sub_m).await,
+        Some(("help", _)) => println!("Help message"),
+        _ => println!("Open LLM Server\nInvalid Command"),
+    }
+    Ok(())
+}
+
+// Handle input parsing and starting webserver
+async fn handle_run_command(sub_m: &clap::ArgMatches) -> Result<(), Box<dyn Error>> {
+    let default_port = 8080;
     let default_threads = 8;
     let default_temp = 0.7;
     let default_freq_penalty = 1.2;
     let default_output_tokens = 2048;
 
-    let matches = cli_interface();
-    match matches.subcommand() {
-        Some(("run", sub_m)) => {
-            let port = sub_m
-                .value_of("port")
-                .unwrap_or(&default_port.to_string())
-                .parse::<u16>()
-                .unwrap_or(default_port);
-            let num_threads = sub_m
-                .value_of("num_threads")
-                .unwrap_or(&default_threads.to_string())
-                .parse::<u16>()
-                .unwrap_or(default_threads);
-            let temp = sub_m
-                .value_of("temp")
-                .unwrap_or(&default_temp.to_string())
-                .parse::<f32>()
-                .unwrap_or(default_temp);
-            let freq_penalty = sub_m
-                .value_of("freq_penalty")
-                .unwrap_or(&default_freq_penalty.to_string())
-                .parse::<f32>()
-                .unwrap_or(default_freq_penalty);
-            let output_tokens = sub_m
-                .value_of("output_tokens")
-                .unwrap_or(&default_output_tokens.to_string())
-                .parse::<usize>()
-                .unwrap_or(default_output_tokens);
-            let m_arg = sub_m.value_of("model");
-            let model_path = match m_arg {
-                Some(m) => m.to_string(),
-                None => find_local_model().unwrap_or(("model.bin").to_string()),
-            };
-            model_file_close_check(&model_path);
-            return run_webserver(
-                &model_path,
-                port,
-                num_threads,
-                temp,
-                freq_penalty,
-                output_tokens,
-            )
-            .await;
-        }
-        Some(("help", _)) => println!("Help message"),
-        _ => println!("Invalid command"),
-    }
-    Ok(())
+    let port = sub_m
+        .value_of("port")
+        .unwrap_or(&default_port.to_string())
+        .parse::<u16>()
+        .unwrap_or(default_port);
+    let num_threads = sub_m
+        .value_of("num_threads")
+        .unwrap_or(&default_threads.to_string())
+        .parse::<u16>()
+        .unwrap_or(default_threads);
+    let temp = sub_m
+        .value_of("temp")
+        .unwrap_or(&default_temp.to_string())
+        .parse::<f32>()
+        .unwrap_or(default_temp);
+    let freq_penalty = sub_m
+        .value_of("freq_penalty")
+        .unwrap_or(&default_freq_penalty.to_string())
+        .parse::<f32>()
+        .unwrap_or(default_freq_penalty);
+    let output_tokens = sub_m
+        .value_of("output_tokens")
+        .unwrap_or(&default_output_tokens.to_string())
+        .parse::<usize>()
+        .unwrap_or(default_output_tokens);
+    let m_arg = sub_m.value_of("model");
+    let model_path = match m_arg {
+        Some(m) => m.to_string(),
+        None => find_local_model().unwrap_or(("model.bin").to_string()),
+    };
+
+    model_file_close_check(&model_path);
+    return run_webserver(
+        &model_path,
+        port,
+        num_threads,
+        temp,
+        freq_penalty,
+        output_tokens,
+    )
+    .await;
 }
 
 // Intializes the LLM model interface, and starts the web server
@@ -91,7 +94,7 @@ async fn run_webserver(
         num_threads,
         temp,
         freq_penalty,
-        output_tokens
+        output_tokens,
     )?));
 
     // Setup the endpoints

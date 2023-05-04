@@ -7,7 +7,7 @@ pub fn cli_interface() -> clap::ArgMatches {
         .about("Expose and run local LLMs via HTTP API using a single command.")
         .subcommand(
             App::new("run")
-                .about("Run the app")
+                .about("Load the LLM and start the webserver")
                 .arg(
                     Arg::new("port")
                         .short('p')

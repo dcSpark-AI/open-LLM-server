@@ -7,11 +7,11 @@
     {
       "type": "lldb",
       "request": "launch",
-      "name": "Debug executable 'open_llm_server'",
+      "name": "Debug executable 'open-llm-server'",
       "cargo": {
-        "args": ["build", "--bin=open_llm_server", "--package=open_llm_server"],
+        "args": ["build", "--bin=open-llm-server", "--package=open-llm-server"],
         "filter": {
-          "name": "open_llm_server",
+          "name": "open-llm-server",
           "kind": "bin"
         }
       },
@@ -24,16 +24,16 @@
     {
       "type": "lldb",
       "request": "launch",
-      "name": "Debug unit tests in executable 'open_llm_server'",
+      "name": "Debug unit tests in executable 'open-llm-server'",
       "cargo": {
         "args": [
           "test",
           "--no-run",
-          "--bin=open_llm_server",
-          "--package=open_llm_server"
+          "--bin=open-llm-server",
+          "--package=open-llm-server"
         ],
         "filter": {
-          "name": "open_llm_server",
+          "name": "open-llm-server",
           "kind": "bin"
         }
       },

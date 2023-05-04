@@ -1,6 +1,6 @@
 # Open LLM Server
 
-Open LLM Server enables you to run local LLMs (Language Models) via HTTP API in a single command. It supports Linux, Mac, and Windows, enabling you to drop the binary executable in a folder with a model and simply `./open_llm_server run` to instantly get started using it.
+Open LLM Server enables you to run local LLMs (Language Models) via HTTP API in a single command. It supports Linux, Mac, and Windows, enabling you to drop the binary executable in a folder with a model and simply `./open-llm-server run` to instantly get started using it.
 
 This allows developers to quickly integrate local LLMs into their applications without having to import a single library or understand absolutely anything about LLMs. You can simply interact with Open LLM Server via a familiar HTTP API interface, yet unlock all of the power of an LLM in your code.
 
@@ -10,7 +10,7 @@ Up to this point, OpenAI (GPT) and other large service providers offered this ki
 
 1. Download the correct binary for your platform (Windows/Mac/Linux) from the [latest release]()
 2. Place the executable binary in a folder with a `.bin` LLM model that is supported by [Llama.cpp](https://github.com/ggerganov/llama.cpp)
-3. Run the binary executable in a terminal/command line via `./open_llm_server run`
+3. Run the binary executable in a terminal/command line via `./open-llm-server run`
 4. Visit [http://localhost:9123](http://localhost:9123) to verify Open LLM Server started correctly
 5. Submit a prompt to test by using the [example request below](#webserver-endpoints)
 
@@ -32,13 +32,13 @@ Run the app with the following options:
 Example:
 
 ```
-./open_llm_server run
+./open-llm-server run
 ```
 
 Or, with several options used:
 
 ```
-./open_llm_server run --port 8080 --model /path/to/model --temp 0.8 --freq_penalty 1.0 --output_tokens 1024 --num_threads 4
+./open-llm-server run --port 8080 --model /path/to/model --temp 0.8 --freq_penalty 1.0 --output_tokens 1024 --num_threads 4
 ```
 
 ### `help`
