@@ -2,7 +2,7 @@ use crate::error::LLMError;
 use crate::llm_interface::LLMInterface;
 use crate::APP_VERSION;
 use futures::Future;
-use hyper::body::{to_bytes};
+use hyper::body::to_bytes;
 use hyper::header;
 use hyper::{Body, Request, Response};
 use llm_chain_llama::Executor as LlamaExecutor;
@@ -110,77 +110,77 @@ async fn is_busy_http_response(response: IsBusyResponse) -> Result<Response<Body
 }
 
 // Handle a prompt request and send the response through a channel
-async fn generate_embeddings_endpoint(
-    mut req: Request<Body>,
-    llm: Arc<Mutex<LLMInterface<LlamaExecutor>>>,
-    tx: oneshot::Sender<Result<Response<Body>, LLMError>>,
-) {
-    // Extract the body from the request and convert it to a string
-    let body_bytes = to_bytes(req.body_mut()).await.unwrap();
-    let body_str = String::from_utf8(body_bytes.to_vec()).unwrap();
+// async fn generate_embeddings_endpoint(
+//     mut req: Request<Body>,
+//     llm: Arc<Mutex<LLMInterface<LlamaExecutor>>>,
+//     tx: oneshot::Sender<Result<Response<Body>, LLMError>>,
+// ) {
+//     // Extract the body from the request and convert it to a string
+//     let body_bytes = to_bytes(req.body_mut()).await.unwrap();
+//     let body_str = String::from_utf8(body_bytes.to_vec()).unwrap();
 
-    // Deserialize the body string into a PromptInput struct
-    let input: PromptInput = match serde_json::from_str(&body_str) {
-        Ok(input) => input,
-        Err(_) => {
-            if tx
-                .send(Err(LLMError::Custom(
-                    "Failed to parse request body".to_string(),
-                )))
-                .is_err()
-            {
-                eprintln!("Failed to send prompt response.");
-            }
-            return;
-        }
-    };
+//     // Deserialize the body string into a PromptInput struct
+//     let input: PromptInput = match serde_json::from_str(&body_str) {
+//         Ok(input) => input,
+//         Err(_) => {
+//             if tx
+//                 .send(Err(LLMError::Custom(
+//                     "Failed to parse request body".to_string(),
+//                 )))
+//                 .is_err()
+//             {
+//                 eprintln!("Failed to send prompt response.");
+//             }
+//             return;
+//         }
+//     };
 
-    // Attempt to acquire the LLM mutex lock and submit the prompt
-    let res = match llm.try_lock() {
-        Ok(mut llm_guard) => llm_guard.generate_embeddings(&input.prompt).await,
-        // If the LLM is locked, return an error
-        Err(_) => Err(LLMError::Custom("LLM Is Busy".to_string())),
-    };
+//     // Attempt to acquire the LLM mutex lock and submit the prompt
+//     let res = match llm.try_lock() {
+//         Ok(mut llm_guard) => llm_guard.generate_embeddings(&input.prompt).await,
+//         // If the LLM is locked, return an error
+//         Err(_) => Err(LLMError::Custom("LLM Is Busy".to_string())),
+//     };
 
-    // Create a response based on the result of the prompt request
-    let response = match res {
-        Ok(embeddings) => PromptResponse {
-            success: true,
-            response: embeddings[0].to_string(),
-        },
-        Err(error) => PromptResponse {
-            success: false,
-            response: error.to_string(),
-        },
-    };
+//     // Create a response based on the result of the prompt request
+//     let response = match res {
+//         Ok(embeddings) => PromptResponse {
+//             success: true,
+//             response: embeddings[0].to_string(),
+//         },
+//         Err(error) => PromptResponse {
+//             success: false,
+//             response: error.to_string(),
+//         },
+//     };
 
-    // Convert the response to JSON
-    let body = match serde_json::to_string(&response) {
-        Ok(body) => body,
-        Err(_) => {
-            if tx
-                .send(Err(LLMError::Custom(
-                    "Failed to convert response to JSON".to_string(),
-                )))
-                .is_err()
-            {
-                eprintln!("Failed to send prompt response.");
-            }
-            return;
-        }
-    };
+//     // Convert the response to JSON
+//     let body = match serde_json::to_string(&response) {
+//         Ok(body) => body,
+//         Err(_) => {
+//             if tx
+//                 .send(Err(LLMError::Custom(
+//                     "Failed to convert response to JSON".to_string(),
+//                 )))
+//                 .is_err()
+//             {
+//                 eprintln!("Failed to send prompt response.");
+//             }
+//             return;
+//         }
+//     };
 
-    // Create a JSON response
-    let res = Response::builder()
-        .header(header::CONTENT_TYPE, "application/json")
-        .body(Body::from(body))
-        .map_err(LLMError::from);
+//     // Create a JSON response
+//     let res = Response::builder()
+//         .header(header::CONTENT_TYPE, "application/json")
+//         .body(Body::from(body))
+//         .map_err(LLMError::from);
 
-    // Send the response through the channel
-    if tx.send(res).is_err() {
-        eprintln!("Failed to send prompt response.");
-    }
-}
+//     // Send the response through the channel
+//     if tx.send(res).is_err() {
+//         eprintln!("Failed to send prompt response.");
+//     }
+// }
 
 // Handle a prompt request and send the response through a channel
 async fn submit_prompt_endpoint(
@@ -270,7 +270,7 @@ where
         ) -> Fut
         + Send
         + 'static,
-    Fut: Future<Output = ()> + Send + 'static,
+    Fut: Future<Output = ()> + 'static,
 {
     // Create a new channel to receive the response
     let (tx, rx) = oneshot::channel();

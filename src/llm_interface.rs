@@ -50,18 +50,18 @@ impl LLMInterface<LlamaExecutor> {
         return Ok(res_string);
     }
 
-    // Generate embeddings for the given input
-    pub async fn generate_embeddings(&mut self, input_text: &str) -> Result<Vec<i32>, LLMError> {
-        println!("Generating embeddings for: {}", input_text);
-        // Run prompt
-        let res = self.exec.generate_embeddings(input_text);
+    // // Generate embeddings for the given input
+    // pub async fn generate_embeddings(&mut self, input_text: &str) -> Result<Vec<i32>, LLMError> {
+    //     println!("Generating embeddings for: {}", input_text);
+    //     // Run prompt
+    //     let res = self.exec.generate_embeddings(input_text);
 
-        println!("Embedding Vector:");
-        for element in &res {
-            println!("{}", element);
-        }
+    //     println!("Embedding Vector:");
+    //     for element in &res {
+    //         println!("{}", element);
+    //     }
 
-        // Return string
-        return Ok(res);
-    }
+    //     // Return string
+    //     return Ok(res);
+    // }
 }

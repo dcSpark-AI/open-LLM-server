@@ -1,3 +1,0 @@
-[submodule "llm-chain-llama/sys/llama.cpp"]
-	path = llm-chain-llama/sys/llama.cpp
-	url = https://github.com/ggerganov/llama.cpp.git
