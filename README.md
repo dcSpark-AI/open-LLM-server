@@ -11,7 +11,7 @@ Up to this point, OpenAI (GPT) and other large service providers offered this ki
 1. Download the correct binary for your platform (Windows/Mac/Linux) from the [latest release]()
 2. Place the executable binary in a folder with a `.bin` LLM model that is supported by [Llama.cpp](https://github.com/ggerganov/llama.cpp)
 3. Run the binary executable in a terminal/command line via `./open-llm-server run`
-4. Visit [http://localhost:9123](http://localhost:9123) to verify Open LLM Server started correctly
+4. Visit [http://localhost:8080](http://localhost:9123) to verify Open LLM Server started correctly
 5. Submit a prompt to test by using the [example request below](#webserver-endpoints)
 
 ## CLI Commands
@@ -54,7 +54,7 @@ This endpoint allows you to submit a prompt to the LLM and receive the generated
 Example Request:
 
 ```bash
-curl -X POST -H "Content-Type: application/json" -d '{"prompt": "What is a maple tree?"}' http://0.0.0.0:9123/submit_prompt
+curl -X POST -H "Content-Type: application/json" -d '{"prompt": "What is a maple tree?"}' http://0.0.0.0:8080/submit_prompt
 ```
 
 Success Response:
