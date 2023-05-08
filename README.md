@@ -8,8 +8,8 @@ Up to this point, OpenAI (GPT) and other large service providers offered this ki
 
 ## Quick Start
 
-1. Download the correct binary for your platform (Windows/Mac/Linux) from the [latest release]()
-2. Place the executable binary in a folder with a `.bin` LLM model that is supported by [Llama.cpp](https://github.com/ggerganov/llama.cpp)
+1. Download the correct binary for your platform (Windows/Mac/Linux) from the [latest release](https://github.com/dcSpark-AI/open-LLM-server/releases)
+2. Place the executable binary in a folder with a GGML-targeting `.bin` LLM model that is supported by [Llama.cpp](https://github.com/ggerganov/llama.cpp) (ideally 4-bit quantized for best compatability)
 3. Run the binary executable in a terminal/command line via `./open-llm-server run`
 4. Visit [http://localhost:8080](http://localhost:9123) to verify Open LLM Server started correctly
 5. Submit a prompt to test by using the [example request below](#webserver-endpoints)
