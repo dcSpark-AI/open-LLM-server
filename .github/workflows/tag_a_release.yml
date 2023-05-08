@@ -1,0 +1,31 @@
+name: Releases
+
+on: 
+  push:
+    tags:
+    - '*'
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v3
+    - run: source $HOME/.cargo/env
+    - run: sudo apt-get update
+    - run: sudo apt-get install -y libclang-dev pkg-config libssl-dev build-essential cmake mingw-w64
+    - run: curl https://sh.rustup.rs -sSf | sh -s -- -y
+    - run: rustup target add x86_64-pc-windows-gnu
+    - run: rustup target add aarch64-apple-darwin 
+    - run: cargo build --release --target=x86_64-unknown-linux-gnu  --verbose
+    - run: cargo test --verbose
+    - run: mkdir binaries
+    - run: cp target/x86_64-unknown-linux-gnu/release/open-llm-server binaries/open-llm-server_linux
+    - uses: ncipollo/release-action@v1
+      with:
+        allowUpdates: yes
+        artifacts: "binaries/open-llm-server_linux"
+#        bodyFile: "body.md"
+
