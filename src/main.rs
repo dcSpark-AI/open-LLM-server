@@ -17,15 +17,14 @@ use tokio::sync::Mutex;
 pub const APP_VERSION: &str = "0.1.0";
 
 #[tokio::main]
-
 async fn main() -> Result<(), Box<dyn Error>> {
-    let matches = cli_interface();
+    let matches = cli_interface(); // Get the command line interface arguments
     match matches.subcommand() {
-        Some(("run", sub_m)) => return handle_run_command(sub_m).await,
-        Some(("help", _)) => println!("Help message"),
-        _ => println!("Open LLM Server\nInvalid Command"),
+        Some(("run", sub_m)) => return handle_run_command(sub_m).await, // If the subcommand is "run" then call the handle_run_command function
+        Some(("help", _)) => println!(""),
+        _ => println!("Open LLM Server\nInvalid Command"), // Otherwise print an invalid command message
     }
-    Ok(())
+    Ok(()) // Return Ok if no errors occur
 }
 
 // Handle input parsing and starting webserver

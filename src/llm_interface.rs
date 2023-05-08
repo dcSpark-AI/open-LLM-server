@@ -7,12 +7,13 @@ pub struct LLMInterface<T: Executor> {
     pub exec: T,
 }
 impl LLMInterface<LlamaExecutor> {
+    // Create a new local LLM instance with the given parameters
     pub fn new_local_llm(
-        model_path: &str,
-        num_threads: u16,
-        temp: f32,
-        freq_penalty: f32,
-        output_tokens: usize,
+        model_path: &str,     // Path to the model
+        num_threads: u16,     // Number of threads to use
+        temp: f32,            // Temperature for sampling
+        freq_penalty: f32,    // Frequency penalty for sampling
+        output_tokens: usize, // Number of tokens to predict
     ) -> Result<Self, LLMError> {
         // Setup all options
         let exec_options = PerExecutor::new().with_model_path(model_path);
