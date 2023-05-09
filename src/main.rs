@@ -60,6 +60,7 @@ async fn handle_run_command(sub_m: &clap::ArgMatches) -> Result<(), Box<dyn Erro
         .unwrap_or(&default_output_tokens.to_string())
         .parse::<usize>()
         .unwrap_or(default_output_tokens);
+    let api_key = sub_m.value_of("api_key");
     let m_arg = sub_m.value_of("model");
     let model_path = match m_arg {
         Some(m) => m.to_string(),
@@ -74,6 +75,7 @@ async fn handle_run_command(sub_m: &clap::ArgMatches) -> Result<(), Box<dyn Erro
         temp,
         freq_penalty,
         output_tokens,
+        api_key,
     )
     .await;
 }
@@ -86,6 +88,7 @@ async fn run_webserver(
     temp: f32,
     freq_penalty: f32,
     output_tokens: usize,
+    api_key: Option<&str>,
 ) -> Result<(), Box<dyn Error>> {
     // Setup LLMInterface using an Arc and Mutex to enable sharing the LLM interface across endpoints
     let llm = Arc::new(Mutex::new(LLMInterface::new_local_llm(
@@ -94,6 +97,7 @@ async fn run_webserver(
         temp,
         freq_penalty,
         output_tokens,
+        api_key,
     )?));
 
     // Setup the endpoints

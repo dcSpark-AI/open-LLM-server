@@ -15,7 +15,7 @@
           "kind": "bin"
         }
       },
-      "args": [],
+      "args": ["run", "-a", "123", "-p", "8081"],
       "env": {
         "MY_ENV_VAR": "my_env_var_value"
       },

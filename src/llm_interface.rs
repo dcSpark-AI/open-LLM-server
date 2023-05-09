@@ -5,15 +5,17 @@ use llm_chain_llama::{PerExecutor, PerInvocation};
 
 pub struct LLMInterface<T: Executor> {
     pub exec: T,
+    pub api_key: Option<String>,
 }
 impl LLMInterface<LlamaExecutor> {
     // Create a new local LLM instance with the given parameters
     pub fn new_local_llm(
-        model_path: &str,     // Path to the model
-        num_threads: u16,     // Number of threads to use
-        temp: f32,            // Temperature for sampling
-        freq_penalty: f32,    // Frequency penalty for sampling
-        output_tokens: usize, // Number of tokens to predict
+        model_path: &str,      // Path to the model
+        num_threads: u16,      // Number of threads to use
+        temp: f32,             // Temperature for sampling
+        freq_penalty: f32,     // Frequency penalty for sampling
+        output_tokens: usize,  // Number of tokens to predict
+        api_key: Option<&str>, // Optional api key
     ) -> Result<Self, LLMError> {
         // Setup all options
         let exec_options = PerExecutor::new().with_model_path(model_path);
@@ -32,7 +34,10 @@ impl LLMInterface<LlamaExecutor> {
             std::process::exit(1);
         }
 
-        Ok(Self { exec: executor? })
+        Ok(Self {
+            exec: executor?,
+            api_key: api_key.map(|s| s.to_string()),
+        })
     }
 
     // Submit a prompt to the LLM if it isn't currently busy

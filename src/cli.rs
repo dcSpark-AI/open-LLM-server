@@ -49,6 +49,13 @@ pub fn cli_interface() -> clap::ArgMatches {
                         .long("num_threads")
                         .takes_value(true)
                         .help("Number of threads the LLM should use (Default: 8)"),
+                )
+                .arg(
+                    Arg::new("api_key")
+                        .short('a')
+                        .long("api-key")
+                        .takes_value(true)
+                        .help("The API key to protect the server"),
                 ),
         )
         .subcommand(App::new("help").about("Prints help information"))

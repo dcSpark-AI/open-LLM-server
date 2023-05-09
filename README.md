@@ -23,6 +23,7 @@ The following commands are available in the command line interface:
 Run the app with the following options:
 
 - `--port` / `-p`: The port on which to run the server.
+- `--api_key` / `-a`: Specify an api-key that clients must include in the Authorization header when submitting requests.
 - `--model` / `-m`: The path to the local LLM model file.
 - `--temp` / `-t`: The sampling temperature the LLM should use (Default: 0.7).
 - `--freq_penalty` / `-f`: The frequency (repeat) penalty the LLM should use (Default: 1.2).
