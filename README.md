@@ -26,7 +26,7 @@ The following commands are available in the command line interface:
 
 Run the app with the following options:
 
-- `--port` / `-p`: The port on which to run the server.
+- `--port` / `-p`: The port on which to run the server (Default: 8080).
 - `--api_key` / `-a`: Specify an api-key that clients must include in the Authorization header when submitting requests.
 - `--model` / `-m`: The path to the local LLM model file.
 - `--temp` / `-t`: The sampling temperature the LLM should use (Default: 0.7).
@@ -97,7 +97,13 @@ Example Response:
 
 Open LLM Server uses Rust bindings for [Llama.cpp](https://github.com/ggerganov/llama.cpp#description). In theory this means we have full compatibility with whatever models Llama.cpp supports (which are GGML targeted .bin models). 5-bit models are not yet supported (so generally stick to `q4_0` for maximum compatibility).
 
-If you're looking to download a model to get started, we recommend searching for a 7b GGML model on [HuggingFace](huggingface.co)
+If you're looking to download a model to get started, we recommend searching for a 7b GGML model on [HuggingFace](huggingface.co).
+
+For reference, a few models we have personally tested/verified are working:
+
+- WizardLM-7B-ggml
+- llama-ggml-model-7b
+- ggml-gpt4all-l13b-snoozy
 
 ## Special Thanks
 
