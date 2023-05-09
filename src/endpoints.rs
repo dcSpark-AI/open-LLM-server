@@ -45,6 +45,7 @@ impl IsBusyResponse {
         return resp;
     }
 }
+
 // Routes requests based on their URI
 pub async fn route_requests(
     req: Request<Body>,
@@ -58,30 +59,17 @@ pub async fn route_requests(
 
     // Check if there is an API key/run checks
     let llm_clone = Arc::clone(&llm);
-    let llm_clone = llm_clone.lock().await;
-    if let Some(api_key) = &llm_clone.api_key {
-        // Check if the request includes an 'Authorization' header
-        if let Some(auth_header) = req.headers().get("Authorization") {
-            // If the header is not equal to the API key, return an error
-            println!(
-                "auth header: {}\napi key: {}",
-                auth_header.to_str().unwrap(),
-                api_key
-            );
-            if auth_header != api_key {
-                println!("invalid api key");
-                return Err(LLMError::Custom("Invalid API key".into()));
-            }
-        } else {
-            // If no 'Authorization' header is present, return an error
-            return Err(LLMError::Custom("No API key provided".into()));
-            println!("Missing api key");
-        }
+    if let Err(e) = check_api_key(&req, &llm_clone).await {
+        let error_msg = format!("{}", e);
+        return Ok(Response::builder()
+            .status(hyper::StatusCode::UNAUTHORIZED)
+            .body(Body::from(error_msg))
+            .unwrap());
     }
-    drop(llm_clone);
 
     // If the LLM isn't busy and API checks pass,
     // match the URI path to the appropriate endpoint function
+    // and return the result
     match req.uri().path() {
         // Root endpoint
         "/" => root_endpoint(req).await,
@@ -101,6 +89,32 @@ pub async fn route_requests(
         // Return an empty response for any other path
         _ => Ok(Response::new(Body::empty())),
     }
+}
+
+// Verifies that the api key checks pass
+async fn check_api_key(
+    req: &Request<Body>,
+    llm: &Arc<Mutex<LLMInterface<LlamaExecutor>>>,
+) -> Result<(), LLMError> {
+    // Lock the LLM and check if there is an API key
+    let llm_guard = llm.lock().await;
+    if let Some(api_key) = &llm_guard.api_key {
+        // Check if the request includes an 'Authorization' header
+        if let Some(auth_header) = req.headers().get("Authorization") {
+            // If the header is not equal to the API key, return an error
+            if auth_header != api_key {
+                return Err(LLMError::Custom("Invalid API key".into()));
+            }
+        } else {
+            // If no 'Authorization' header is present, return an error
+            return Err(LLMError::Custom("No API key provided".into()));
+        }
+    }
+    // Drop the lock
+    drop(llm_guard);
+
+    // If we reached this point, the API key is valid or there was no API key to check
+    Ok(())
 }
 
 // Basic root endpoint
