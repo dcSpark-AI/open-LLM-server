@@ -8,12 +8,14 @@ By simply dropping the Open LLM Server executable in a folder with a quantized `
 
 This allows developers to quickly integrate local LLMs into their applications without having to import a single library or understand absolutely anything about LLMs. You merely interact with Open LLM Server via a familiar HTTP API interface, yet unlock all of the power of an LLM in your code.
 
-Up to this point, OpenAI (GPT) and other large service providers have offered this kind of interface to developers, however there was no option available for those using local LLMs. Especially for privacy-focused use cases, situations where paying fees per LLM call are not viable, for hobbyists to start tinkering with, and more, Open LLM Server is the best solution for your application.
+Up to this point, OpenAI (GPT) and other large service providers have offered this kind of interface to developers, however there was no option available for those using local LLMs. Especially for privacy-focused use cases, being able to expose local LLMs to mobile apps or browser extensions, situations where paying fees per LLM call are not viable, for hobbyists to start tinkering with, and more, Open LLM Server is the best solution for your application.
+
+Open LLM Server binaries are quite compact/portable, allowing you to easily integrate it into your stack no matter what language or toolset you are using.
 
 ## Quick Start
 
 1. Download the correct binary for your platform (Windows/Mac/Linux) from the [latest release](https://github.com/dcSpark-AI/open-LLM-server/releases)
-2. Place the executable in a folder with a GGML-targeting `.bin` LLM model that is supported by [Llama.cpp](https://github.com/ggerganov/llama.cpp) (ideally 4-bit quantized for best compatibility)
+2. Place the executable in a folder together with a GGML-targeting `.bin` LLM model; [More info on supported models](#supported-models)
 3. Run the binary executable in a terminal/command line via `./open-llm-server run`
 4. Visit [http://localhost:8080](http://localhost:8080) to verify Open LLM Server started correctly
 5. Submit a prompt to test by using the [example request below](#webserver-endpoints)
