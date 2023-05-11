@@ -21,11 +21,11 @@ jobs:
     - run: rustup target add aarch64-apple-darwin 
     - run: cargo build --release --target=x86_64-unknown-linux-gnu  --verbose
     - run: cargo test --verbose
-    - run: mkdir binaries
+    - run: mkdir -p binaries
     - run: cp target/x86_64-unknown-linux-gnu/release/open-llm-server binaries/open-llm-server_linux
     - uses: ncipollo/release-action@v1
       with:
         allowUpdates: yes
-        artifacts: "binaries/open-llm-server_linux"
+        artifacts: "binaries/*"
 #        bodyFile: "body.md"
 
