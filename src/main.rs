@@ -111,7 +111,9 @@ async fn run_webserver(
     // Start the server
     let addr = ([127, 0, 0, 1], port).into();
     let server = Server::bind(&addr).serve(make_svc);
-    println!("Server is running on http://{}", addr);
+    println!("\n\nOpen LLM Server");
+    println!("---------------");
+    println!("Server is running on http://{}\n", addr);
     if let Err(e) = server.await {
         eprintln!("Server error: {}", e);
     }
