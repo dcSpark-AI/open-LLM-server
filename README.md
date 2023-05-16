@@ -4,6 +4,12 @@
 <p align="center">Open LLM Server enables you to run/prompt local LLMs (LLaMa, Vicuna, etc.) via HTTP API in a single command (Linux, Mac, and Windows)
 </p><br/>
 
+<div align="center">
+<img src = "content/open-llm-server-vid.gif">
+</div>
+
+## Introduction
+
 By simply dropping the Open LLM Server executable in a folder with a quantized `.bin` model, you can run `./open-llm-server run` to instantly get started using it.
 
 This allows developers to quickly integrate local LLMs into their applications without having to import a single library or understand absolutely anything about LLMs. You merely interact with Open LLM Server via a familiar HTTP API interface, yet unlock all of the power of an LLM in your code.
@@ -120,5 +126,6 @@ Open LLM Server is released under the MIT License.
 The long-term goal is to make Open LLM Server a go-to option for building apps using a local LLM no matter what language or framework you prefer. This current version has the barebones essentials in place, but there are clear improvements which will be made going forward:
 
 1. Implement an endpoint to produce the embeddings for a given input string.
-2. Implement a streaming endpoint/interface when submitting prompts.
-3. Other quality of life improvements.
+2. Support RedPajama & other models.
+3. Implement a streaming endpoint/interface when submitting prompts.
+4. Other quality of life improvements.
