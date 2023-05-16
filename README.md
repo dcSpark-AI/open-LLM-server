@@ -105,7 +105,7 @@ Example Response:
 
 Open LLM Server uses Rust bindings for [Llama.cpp](https://github.com/ggerganov/llama.cpp#description). In theory this means we have full compatibility with whatever models Llama.cpp supports (which are GGML targeted .bin models). 5-bit models are not yet supported (so generally stick to `q4_0` for maximum compatibility).
 
-If you're looking to download a model to get started, we recommend searching for a 7b GGML model on [HuggingFace](huggingface.co).
+If you're looking to download a model to get started, we recommend searching for a 7b GGML model on [HuggingFace](https://huggingface.co).
 
 For reference, a few models we have personally tested/verified are working:
 
