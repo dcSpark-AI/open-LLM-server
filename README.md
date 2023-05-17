@@ -112,6 +112,7 @@ For reference, a few models we have personally tested/verified are working:
 - WizardLM-7B-ggml
 - llama-ggml-model-7b
 - ggml-gpt4all-l13b-snoozy
+- [gpt4all-lora-quantized-ggml](https://huggingface.co/eachadea/ggml-gpt4all-7b-4bit/tree/main)
 
 ## Special Thanks
 
