@@ -114,6 +114,20 @@ For reference, a few models we have personally tested/verified are working:
 - [ggml-gpt4all-l13b-snoozy](https://huggingface.co/TheBloke/GPT4All-13B-snoozy-GGML)
 - [gpt4all-lora-quantized-ggml](https://huggingface.co/eachadea/ggml-gpt4all-7b-4bit/tree/main)
 
+
+## Building from Source
+Before building Open LLM Server from source, make sure you have Rust and Cargo installed on your system.
+
+If not, you can install them by following the instructions at the official Rust website: https://www.rust-lang.org/tools/install.
+
+Once setup, simply issue the following commands in your terminal below:
+```bash
+git clone https://github.com/dcSpark-AI/open-LLM-server.git
+cd open-LLM-server
+cargo build --release
+./target/release/open-llm-server run
+```
+
 ## Special Thanks
 
 Thanks to the authors of [llm-chain](https://github.com/sobelio/llm-chain) for their Rust bindings over the great [Llama.cpp](https://github.com/ggerganov/llama.cpp).
