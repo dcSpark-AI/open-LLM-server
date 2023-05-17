@@ -109,9 +109,10 @@ If you're looking to download a model to get started, we recommend searching for
 
 For reference, a few models we have personally tested/verified are working:
 
-- WizardLM-7B-ggml
-- llama-ggml-model-7b
-- ggml-gpt4all-l13b-snoozy
+- ggml-llama-7b
+- [WizardLM-7B-ggml](https://huggingface.co/TheBloke/wizardLM-7B-GGML)
+- [ggml-gpt4all-l13b-snoozy](https://huggingface.co/TheBloke/GPT4All-13B-snoozy-GGML)
+- [gpt4all-lora-quantized-ggml](https://huggingface.co/eachadea/ggml-gpt4all-7b-4bit/tree/main)
 
 ## Special Thanks
 
